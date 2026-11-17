@@ -1,0 +1,289 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Inter", Arial, sans-serif;
+  background: #f4f7fb;
+  color: #172033;
+}
+
+.app {
+  min-height: 100vh;
+}
+
+.topbar {
+  background: #111c35;
+  color: white;
+  padding: 22px 5%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.brand {
+  font-size: 25px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.brand span {
+  color: #38bdf8;
+}
+
+.topbar p {
+  color: #bdc9dd;
+  margin-top: 5px;
+  font-size: 13px;
+}
+
+.refresh {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: 1px solid #475569;
+  border-radius: 8px;
+  background: #243450;
+  color: white;
+  cursor: pointer;
+}
+
+.container {
+  max-width: 1450px;
+  margin: auto;
+  padding: 30px 4%;
+}
+
+.welcome {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.welcome h1 {
+  font-size: 27px;
+  margin-bottom: 7px;
+}
+
+.welcome p {
+  color: #64748b;
+}
+
+.live-status {
+  color: #059669;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.filters {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin-bottom: 25px;
+}
+
+.filter-heading {
+  grid-column: 1 / -1;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.filters label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+}
+
+.filters select {
+  padding: 11px;
+  border: 1px solid #dbe3ed;
+  border-radius: 7px;
+  background: white;
+  color: #172033;
+  outline: none;
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 17px;
+  margin-bottom: 25px;
+}
+
+.kpi-card {
+  background: white;
+  padding: 21px;
+  border: 1px solid #e5eaf1;
+  border-radius: 12px;
+  box-shadow: 0 3px 12px rgba(15, 23, 42, 0.04);
+}
+
+.kpi-icon {
+  width: 43px;
+  height: 43px;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.kpi-card p {
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.kpi-card h2 {
+  font-size: 22px;
+  color: #172033;
+  overflow-wrap: anywhere;
+}
+
+.chart-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  margin-bottom: 25px;
+}
+
+.panel {
+  background: white;
+  padding: 22px;
+  border: 1px solid #e5eaf1;
+  border-radius: 12px;
+  box-shadow: 0 3px 12px rgba(15, 23, 42, 0.04);
+  min-width: 0;
+}
+
+.panel h3 {
+  font-size: 16px;
+  margin-bottom: 22px;
+}
+
+.transactions-panel {
+  margin-bottom: 25px;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 850px;
+  font-size: 13px;
+}
+
+th {
+  background: #f1f5f9;
+  color: #475569;
+  text-align: left;
+  padding: 13px;
+  white-space: nowrap;
+}
+
+td {
+  padding: 13px;
+  border-bottom: 1px solid #edf0f5;
+}
+
+tr:hover td {
+  background: #f8fafc;
+}
+
+.withdrawal {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.deposit {
+  color: #059669;
+  font-weight: 600;
+}
+
+.category-tag {
+  background: #eff6ff;
+  color: #2563eb;
+  padding: 5px 9px;
+  border-radius: 20px;
+  font-size: 11px;
+}
+
+.empty {
+  text-align: center;
+  color: #64748b;
+  padding: 25px;
+}
+
+.loading {
+  color: #2563eb;
+  margin: 15px 0;
+}
+
+.error {
+  background: #fef2f2;
+  color: #b91c1c;
+  padding: 13px;
+  border-radius: 8px;
+  margin-bottom: 18px;
+}
+
+footer {
+  text-align: center;
+  color: #94a3b8;
+  font-size: 12px;
+  padding: 20px;
+}
+
+@media (max-width: 1100px) {
+  .kpi-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 700px) {
+  .container {
+    padding: 20px 4%;
+  }
+
+  .topbar {
+    padding: 18px 4%;
+  }
+
+  .welcome {
+    align-items: flex-start;
+    gap: 12px;
+    flex-direction: column;
+  }
+
+  .filters,
+  .chart-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .kpi-card {
+    padding: 15px;
+  }
+
+  .kpi-card h2 {
+    font-size: 18px;
+  }
+}
