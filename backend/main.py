@@ -15,7 +15,7 @@ app.add_middleware(
 )
 
 # Excel file is in the main GitHub repository folder
-DATA_FILE = Path(__file__).parent.parent / "bank(1).xlsx"
+DATA_FILE = Path(__file__).parent.parent / "bank.xlsx"
 
 if not DATA_FILE.exists():
     raise FileNotFoundError(f"Dataset not found: {DATA_FILE}")
