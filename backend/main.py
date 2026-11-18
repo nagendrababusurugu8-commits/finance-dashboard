@@ -1,11 +1,12 @@
 
+from io import BytesIO
 from pathlib import Path
 
 import pandas as pd
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI(title="Finance Dashboard API")
+app = FastAPI(title="Dynamic Finance Dashboard API")
 
 app.add_middleware(
     CORSMiddleware,
@@ -14,170 +15,156 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Excel file is in the main GitHub repository folder
+df = pd.DataFrame()
+
+# Load the existing Excel dataset when available
 DATA_FILE = Path(__file__).parent.parent / "bank.xlsx"
 
-if not DATA_FILE.exists():
-    raise FileNotFoundError(f"Dataset not found: {DATA_FILE}")
-
-df = pd.read_excel(DATA_FILE, sheet_name="Sheet1")
-
-# Clean dataset
-df.columns = df.columns.astype(str).str.strip()
-df["DATE"] = pd.to_datetime(df["DATE"], errors="coerce")
-df["WITHDRAWAL AMT"] = pd.to_numeric(
-    df["WITHDRAWAL AMT"], errors="coerce"
-).fillna(0)
-df["DEPOSIT AMT"] = pd.to_numeric(
-    df["DEPOSIT AMT"], errors="coerce"
-).fillna(0)
-df["BALANCE AMT"] = pd.to_numeric(
-    df["BALANCE AMT"], errors="coerce"
-).fillna(0)
-df["TRANSACTION DETAILS"] = (
-    df["TRANSACTION DETAILS"].fillna("Other").astype(str)
-)
+if DATA_FILE.exists():
+    try:
+        df = pd.read_excel(DATA_FILE)
+    except Exception:
+        df = pd.DataFrame()
 
 
-def get_category(description):
-    text = description.upper()
+def clean_dataframe(data):
+    data.columns = data.columns.astype(str).str.strip()
 
-    if any(word in text for word in ["SALARY", "PAYROLL"]):
-        return "Salary"
-    if any(word in text for word in ["ATM", "CASH"]):
-        return "Cash"
-    if any(word in text for word in ["NEFT", "RTGS", "IMPS", "UPI", "TRF"]):
-        return "Transfer"
-    if any(word in text for word in ["INTEREST"]):
-        return "Interest"
-    if any(word in text for word in ["CHARGE", "FEE"]):
-        return "Bank Charges"
-    if any(word in text for word in ["TAX", "GST"]):
-        return "Tax"
+    # Remove completely empty rows and columns
+    data = data.dropna(how="all").dropna(axis=1, how="all")
 
-    return "Other"
-
-
-df["CATEGORY"] = df["TRANSACTION DETAILS"].apply(get_category)
-
-
-def filtered_data(month="All", category="All", transaction_type="All"):
-    data = df.copy()
-
-    if month != "All":
-        data = data[data["DATE"].dt.strftime("%Y-%m") == month]
-
-    if category != "All":
-        data = data[data["CATEGORY"] == category]
-
-    if transaction_type == "Deposit":
-        data = data[data["DEPOSIT AMT"] > 0]
-    elif transaction_type == "Withdrawal":
-        data = data[data["WITHDRAWAL AMT"] > 0]
+    if data.empty or len(data.columns) == 0:
+        raise ValueError("The uploaded file has no usable data.")
 
     return data
 
 
+def make_json_safe(data):
+    return data.astype(object).where(pd.notna(data), None)
+
+
+def get_dashboard_data():
+    if df.empty:
+        return {
+            "uploaded": False,
+            "message": "Please upload a CSV or Excel file.",
+        }
+
+    numeric_columns = df.select_dtypes(include="number").columns.tolist()
+
+    date_columns = []
+    for col in df.columns:
+        if any(word in col.lower() for word in ["date", "time"]):
+            parsed = pd.to_datetime(df[col], errors="coerce")
+            if parsed.notna().sum() > 0:
+                date_columns.append(col)
+
+    categorical_columns = [
+        col for col in df.columns
+        if col not in numeric_columns and col not in date_columns
+    ]
+
+    kpis = []
+    for col in numeric_columns[:8]:
+        values = pd.to_numeric(df[col], errors="coerce").dropna()
+        if not values.empty:
+            kpis.append({
+                "name": col,
+                "sum": round(float(values.sum()), 2),
+                "average": round(float(values.mean()), 2),
+            })
+
+    chart = {
+        "title": "Category Summary",
+        "labels": [],
+        "values": [],
+        "value_name": "",
+    }
+
+    if numeric_columns and categorical_columns:
+        category_col = categorical_columns[0]
+        value_col = numeric_columns[0]
+
+        grouped = (
+            df.groupby(category_col, dropna=False)[value_col]
+            .sum()
+            .sort_values(ascending=False)
+            .head(10)
+        )
+
+        chart = {
+            "title": f"{value_col} by {category_col}",
+            "labels": [str(x) for x in grouped.index],
+            "values": [round(float(x), 2) for x in grouped.values],
+            "value_name": value_col,
+        }
+
+    elif numeric_columns:
+        value_col = numeric_columns[0]
+        values = pd.to_numeric(df[value_col], errors="coerce").dropna()
+
+        chart = {
+            "title": f"{value_col} Distribution",
+            "labels": [str(i + 1) for i in range(len(values.head(10)))],
+            "values": [round(float(x), 2) for x in values.head(10)],
+            "value_name": value_col,
+        }
+
+    preview = make_json_safe(df.head(100)).to_dict(orient="records")
+
+    return {
+        "uploaded": True,
+        "row_count": int(len(df)),
+        "column_count": int(len(df.columns)),
+        "columns": df.columns.tolist(),
+        "numeric_columns": numeric_columns,
+        "date_columns": date_columns,
+        "categorical_columns": categorical_columns,
+        "kpis": kpis,
+        "chart": chart,
+        "preview": preview,
+    }
+
+
 @app.get("/")
 def home():
-    return {"message": "Finance Dashboard API is running"}
+    return {"message": "Dynamic Dashboard API is running"}
 
 
-@app.get("/filters")
-def filters():
-    months = sorted(
-        df["DATE"].dropna().dt.strftime("%Y-%m").unique().tolist()
-    )
-    categories = sorted(df["CATEGORY"].dropna().unique().tolist())
+@app.post("/upload")
+async def upload_file(file: UploadFile = File(...)):
+    global df
 
-    return {
-        "months": ["All"] + months,
-        "categories": ["All"] + categories,
-        "transaction_types": ["All", "Deposit", "Withdrawal"],
-    }
+    filename = (file.filename or "").lower()
+    content = await file.read()
 
+    if not content:
+        raise HTTPException(status_code=400, detail="The uploaded file is empty.")
 
-@app.get("/summary")
-def summary(
-    month: str = "All",
-    category: str = "All",
-    transaction_type: str = "All",
-):
-    data = filtered_data(month, category, transaction_type)
+    try:
+        if filename.endswith(".csv"):
+            new_df = pd.read_csv(BytesIO(content))
+        elif filename.endswith(".xlsx"):
+            new_df = pd.read_excel(BytesIO(content))
+        else:
+            raise HTTPException(
+                status_code=400,
+                detail="Please upload a CSV or XLSX file."
+            )
 
-    total_deposits = float(data["DEPOSIT AMT"].sum())
-    total_withdrawals = float(data["WITHDRAWAL AMT"].sum())
+        df = clean_dataframe(new_df)
 
-    latest_balance = (
-        float(data.sort_values("DATE")["BALANCE AMT"].iloc[-1])
-        if not data.empty else 0
-    )
+        return get_dashboard_data()
 
-    return {
-        "total_transactions": int(len(data)),
-        "total_deposits": round(total_deposits, 2),
-        "total_withdrawals": round(total_withdrawals, 2),
-        "net_cash_flow": round(total_deposits - total_withdrawals, 2),
-        "latest_balance": round(latest_balance, 2),
-    }
-
-
-@app.get("/charts")
-def charts(
-    month: str = "All",
-    category: str = "All",
-    transaction_type: str = "All",
-):
-    data = filtered_data(month, category, transaction_type)
-
-    monthly = data.dropna(subset=["DATE"]).copy()
-    monthly["MONTH"] = monthly["DATE"].dt.strftime("%Y-%m")
-
-    monthly_summary = (
-        monthly.groupby("MONTH")
-        .agg(
-            deposits=("DEPOSIT AMT", "sum"),
-            withdrawals=("WITHDRAWAL AMT", "sum"),
+    except HTTPException:
+        raise
+    except Exception as error:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unable to read this file: {str(error)}"
         )
-        .reset_index()
-        .sort_values("MONTH")
-    )
-
-    category_summary = (
-        data.groupby("CATEGORY")
-        .agg(
-            deposits=("DEPOSIT AMT", "sum"),
-            withdrawals=("WITHDRAWAL AMT", "sum"),
-        )
-        .reset_index()
-    )
-
-    return {
-        "monthly_trend": monthly_summary.to_dict(orient="records"),
-        "category_summary": category_summary.to_dict(orient="records"),
-    }
 
 
-@app.get("/transactions")
-def transactions(
-    month: str = "All",
-    category: str = "All",
-    transaction_type: str = "All",
-):
-    data = filtered_data(month, category, transaction_type)
-    data = data.sort_values("DATE", ascending=False).head(100).copy()
-
-    data["DATE"] = data["DATE"].dt.strftime("%Y-%m-%d")
-    data = data.fillna("")
-
-    return data[
-        [
-            "DATE",
-            "TRANSACTION DETAILS",
-            "CATEGORY",
-            "WITHDRAWAL AMT",
-            "DEPOSIT AMT",
-            "BALANCE AMT",
-        ]
-    ].to_dict(orient="records")
-
+@app.get("/dashboard")
+def dashboard():
+    return get_dashboard_data()
