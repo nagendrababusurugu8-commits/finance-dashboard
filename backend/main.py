@@ -17,15 +17,6 @@ app.add_middleware(
 
 df = pd.DataFrame()
 
-# Load the existing Excel dataset when available
-DATA_FILE = Path(__file__).parent.parent / "bank.xlsx"
-
-if DATA_FILE.exists():
-    try:
-        df = pd.read_excel(DATA_FILE)
-    except Exception:
-        df = pd.DataFrame()
-
 
 def clean_dataframe(data):
     data.columns = data.columns.astype(str).str.strip()
