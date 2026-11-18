@@ -154,8 +154,8 @@ export default function App() {
               onClick={uploadFile}
               disabled={loading || !selectedFile}
             >
-              <Upload size={17} />
-            Generate Dashboard
+            <Activity size={19} />
+             Generate Dashboard
             </button>
           </div>
 
