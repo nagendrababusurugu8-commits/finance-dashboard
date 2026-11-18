@@ -114,10 +114,17 @@ export default function App() {
     <div className="app">
       <header className="topbar">
         <div>
-          <div className="brand">
-            DATA<span>PRO</span>
-          </div>
-          <p>Dynamic Business Analytics Dashboard</p>
+        <div className="brand">
+  {dashboard?.uploaded
+    ? getDashboardTitle(dashboard.columns)
+    : "DATA PRO"}
+</div>
+
+<p>
+  {dashboard?.uploaded
+    ? `${getDashboardTitle(dashboard.columns)} Dashboard`
+    : "Upload your dataset to get started"}
+</p>
         </div>
 
         <button className="refresh" onClick={loadDashboard}>
