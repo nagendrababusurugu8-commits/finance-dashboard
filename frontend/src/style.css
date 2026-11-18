@@ -1,3 +1,4 @@
+
 * {
   margin: 0;
   padding: 0;
@@ -14,6 +15,7 @@ body {
   min-height: 100vh;
 }
 
+/* HEADER */
 .topbar {
   background: #111c35;
   color: white;
@@ -57,6 +59,7 @@ body {
   padding: 30px 4%;
 }
 
+/* WELCOME */
 .welcome {
   display: flex;
   justify-content: space-between;
@@ -79,41 +82,134 @@ body {
   font-weight: 700;
 }
 
-.filters {
-  background: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 20px;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 18px;
+/* UPLOAD PANEL */
+.upload-panel {
   margin-bottom: 25px;
 }
 
-.filter-heading {
-  grid-column: 1 / -1;
-  font-weight: 700;
-  font-size: 16px;
-}
-
-.filters label {
+.upload-heading {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-  font-size: 13px;
-  font-weight: 600;
-  color: #475569;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 22px;
+  color: #2563eb;
 }
 
-.filters select {
-  padding: 11px;
-  border: 1px solid #dbe3ed;
-  border-radius: 7px;
-  background: white;
+.upload-heading h3 {
   color: #172033;
-  outline: none;
+  font-size: 18px;
+  margin-bottom: 5px;
 }
 
+.upload-heading p {
+  color: #64748b;
+  font-size: 13px;
+}
+
+.upload-controls {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+input[type="file"] {
+  padding: 12px;
+  background: #f8fafc;
+  border: 1px solid #dbe3ed;
+  border-radius: 9px;
+  max-width: 100%;
+}
+
+/* PROFESSIONAL GENERATE BUTTON */
+.upload-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 28px;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 700;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 5px 14px rgba(37, 99, 235, 0.25);
+  transition: all 0.25s ease;
+}
+
+.upload-button:hover {
+  background: linear-gradient(135deg, #1d4ed8, #1e40af);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35);
+}
+
+.upload-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.selected-file {
+  color: #475569;
+  font-size: 13px;
+  margin-top: 15px;
+}
+
+.success {
+  color: #059669;
+  margin-top: 15px;
+}
+
+.loading {
+  color: #2563eb;
+  margin: 15px 0;
+}
+
+.error {
+  background: #fef2f2;
+  color: #b91c1c;
+  padding: 13px;
+  border-radius: 8px;
+  margin-bottom: 18px;
+}
+
+/* PANELS */
+.panel {
+  background: white;
+  padding: 22px;
+  border: 1px solid #e5eaf1;
+  border-radius: 12px;
+  box-shadow: 0 3px 12px rgba(15, 23, 42, 0.04);
+  min-width: 0;
+  margin-bottom: 25px;
+}
+
+.panel h3 {
+  font-size: 16px;
+  margin-bottom: 22px;
+}
+
+/* EMPTY DASHBOARD */
+.empty-dashboard {
+  text-align: center;
+  padding: 45px 20px;
+  color: #64748b;
+}
+
+.empty-dashboard svg {
+  color: #2563eb;
+  margin-bottom: 15px;
+}
+
+.empty-dashboard h3 {
+  color: #172033;
+  margin-bottom: 10px;
+}
+
+/* KPI CARDS */
 .kpi-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -152,6 +248,13 @@ body {
   overflow-wrap: anywhere;
 }
 
+.kpi-card small {
+  display: block;
+  margin-top: 8px;
+  color: #64748b;
+}
+
+/* CHARTS */
 .chart-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -159,22 +262,15 @@ body {
   margin-bottom: 25px;
 }
 
-.panel {
-  background: white;
-  padding: 22px;
-  border: 1px solid #e5eaf1;
-  border-radius: 12px;
-  box-shadow: 0 3px 12px rgba(15, 23, 42, 0.04);
-  min-width: 0;
-}
-
-.panel h3 {
-  font-size: 16px;
-  margin-bottom: 22px;
-}
-
+/* TABLE */
 .transactions-panel {
   margin-bottom: 25px;
+}
+
+.preview-info {
+  color: #64748b;
+  font-size: 13px;
+  margin-bottom: 15px;
 }
 
 .table-wrap {
@@ -229,19 +325,7 @@ tr:hover td {
   padding: 25px;
 }
 
-.loading {
-  color: #2563eb;
-  margin: 15px 0;
-}
-
-.error {
-  background: #fef2f2;
-  color: #b91c1c;
-  padding: 13px;
-  border-radius: 8px;
-  margin-bottom: 18px;
-}
-
+/* FOOTER */
 footer {
   text-align: center;
   color: #94a3b8;
@@ -249,6 +333,7 @@ footer {
   padding: 20px;
 }
 
+/* RESPONSIVE */
 @media (max-width: 1100px) {
   .kpi-grid {
     grid-template-columns: repeat(3, 1fr);
@@ -285,5 +370,14 @@ footer {
 
   .kpi-card h2 {
     font-size: 18px;
+  }
+
+  .upload-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .upload-button {
+    width: 100%;
   }
 }
