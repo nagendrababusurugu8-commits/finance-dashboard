@@ -155,7 +155,7 @@ export default function App() {
               disabled={loading || !selectedFile}
             >
               <Upload size={17} />
-              Upload Dataset
+            Generate Dashboard
             </button>
           </div>
 
