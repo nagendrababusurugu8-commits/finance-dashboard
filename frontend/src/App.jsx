@@ -64,9 +64,6 @@ export default function App() {
     }
   }
 
-  useEffect(() => {
-    loadDashboard();
-  }, []);
 
   async function uploadFile() {
     if (!selectedFile) {
