@@ -133,13 +133,7 @@ export default function App() {
       </header>
 
       <main className="container">
-        <section className="welcome">
-          <div>
-            <h1>Dynamic Dashboard</h1>
-            <p>Upload your data and explore automatic insights.</p>
-          </div>
-          <span className="live-status">● API Connected</span>
-        </section>
+
 
         <section className="panel upload-panel">
           <div className="upload-heading">
