@@ -181,12 +181,20 @@ export default function App() {
 
         {dashboard?.uploaded ? (
           <>
-            <section className="welcome">
-              <div>
-                <h2>Dataset Overview</h2>
-                <p>Your uploaded data analysis</p>
-              </div>
-            </section>
+           <section className="welcome">
+  <div>
+    <h1>{dashboard?.uploaded
+      ? getDashboardTitle(dashboard.columns)
+      : "Welcome"}
+    </h1>
+    <p>
+      {dashboard?.uploaded
+        ? `${getDashboardTitle(dashboard.columns)} Dashboard Overview`
+        : "Upload your dataset to get started."}
+    </p>
+  </div>
+  <span className="live-status">● API Connected</span>
+</section>
 
             <section className="kpi-grid">
               <div className="kpi-card">
