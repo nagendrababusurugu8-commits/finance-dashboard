@@ -20,6 +20,29 @@ import {
 
 const API = "https://finance-dashboard-200o.onrender.com";
 
+function getDashboardTitle(columns = []) {
+  const names = columns.join(" ").toLowerCase();
+
+  if (
+    /employee|department|attrition|job_role|performance rating/.test(names)
+  ) return "HR Analysis";
+
+  if (
+    /withdrawal|deposit|balance|transaction|account no|credit|debit/.test(names)
+  ) return "Finance Analysis";
+
+  if (
+    /revenue|invoice|customer|product|unit_price|sales/.test(names)
+  ) return "Sales Analysis";
+
+  if (
+    /inventory|stock|supplier|warehouse|reorder/.test(names)
+  ) return "Inventory Analysis";
+
+  return "Dataset Analysis";
+}
+
+
 export default function App() {
   const [dashboard, setDashboard] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
