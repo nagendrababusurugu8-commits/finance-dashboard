@@ -124,9 +124,20 @@ export default function App() {
 </p>
         </div>
 
-        <button className="refresh" onClick={loadDashboard}>
-          <RefreshCw size={16} /> Refresh
-        </button>
+      <button
+  className="refresh"
+  onClick={() => {
+    setDashboard(null);
+    setSelectedFile(null);
+    setError("");
+    setSuccess("");
+
+    const input = document.getElementById("file-upload");
+    if (input) input.value = "";
+  }}
+>
+  <RefreshCw size={16} /> Home
+</button>
       </header>
 
       <main className="container">
