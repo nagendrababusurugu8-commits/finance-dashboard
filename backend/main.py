@@ -1,12 +1,11 @@
 
 from io import BytesIO
-from pathlib import Path
 
 import pandas as pd
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI(title="Dynamic Finance Dashboard API")
+app = FastAPI(title="DataPro Dynamic Dashboard API")
 
 app.add_middleware(
     CORSMiddleware,
@@ -20,8 +19,6 @@ df = pd.DataFrame()
 
 def clean_dataframe(data):
     data.columns = data.columns.astype(str).str.strip()
-
-    # Remove completely empty rows and columns
     data = data.dropna(how="all").dropna(axis=1, how="all")
 
     if data.empty or len(data.columns) == 0:
@@ -34,13 +31,7 @@ def make_json_safe(data):
     return data.astype(object).where(pd.notna(data), None)
 
 
-def get_dashboard_data():
-    if df.empty:
-        return {
-            "uploaded": False,
-            "message": "Please upload a CSV or Excel file.",
-        }
-
+def get_column_types():
     numeric_columns = df.select_dtypes(include="number").columns.tolist()
 
     date_columns = []
@@ -55,9 +46,23 @@ def get_dashboard_data():
         if col not in numeric_columns and col not in date_columns
     ]
 
+    return numeric_columns, date_columns, categorical_columns
+
+
+def get_dashboard_data():
+    if df.empty:
+        return {
+            "uploaded": False,
+            "message": "Please upload a CSV or Excel file.",
+        }
+
+    numeric_columns, date_columns, categorical_columns = get_column_types()
+
     kpis = []
+
     for col in numeric_columns[:8]:
         values = pd.to_numeric(df[col], errors="coerce").dropna()
+
         if not values.empty:
             kpis.append({
                 "name": col,
@@ -119,7 +124,7 @@ def get_dashboard_data():
 
 @app.get("/")
 def home():
-    return {"message": "Dynamic Dashboard API is running"}
+    return {"message": "DataPro Dashboard API is running"}
 
 
 @app.post("/upload")
@@ -159,3 +164,72 @@ async def upload_file(file: UploadFile = File(...)):
 @app.get("/dashboard")
 def dashboard():
     return get_dashboard_data()
+
+
+@app.get("/chart")
+def create_chart(
+    x_column: str,
+    y_column: str,
+    chart_type: str = "bar"
+):
+    if df.empty:
+        raise HTTPException(status_code=400, detail="Please upload a dataset first.")
+
+    if x_column not in df.columns or y_column not in df.columns:
+        raise HTTPException(status_code=400, detail="Selected columns were not found.")
+
+    chart_type = chart_type.lower()
+
+    allowed_types = ["bar", "line", "area", "pie", "donut", "scatter"]
+
+    if chart_type not in allowed_types:
+        raise HTTPException(status_code=400, detail="Unsupported chart type.")
+
+    x_values = df[x_column]
+    y_values = pd.to_numeric(df[y_column], errors="coerce")
+
+    if chart_type == "scatter":
+        if not pd.api.types.is_numeric_dtype(df[x_column]):
+            raise HTTPException(
+                status_code=400,
+                detail="Scatter chart requires numeric columns for both axes."
+            )
+
+        valid = pd.DataFrame({
+            "x": pd.to_numeric(x_values, errors="coerce"),
+            "y": y_values
+        }).dropna()
+
+        data = [
+            {"x": float(row.x), "y": float(row.y)}
+            for row in valid.head(500).itertuples(index=False)
+        ]
+
+        return {
+            "title": f"{y_column} vs {x_column}",
+            "chart_type": chart_type,
+            "data": data,
+            "x_column": x_column,
+            "y_column": y_column,
+        }
+
+    working = pd.DataFrame({
+        "category": x_values.fillna("Unknown").astype(str),
+        "value": y_values
+    }).dropna(subset=["value"])
+
+    grouped = (
+        working.groupby("category")["value"]
+        .sum()
+        .sort_values(ascending=False)
+        .head(20)
+    )
+
+    return {
+        "title": f"{y_column} by {x_column}",
+        "chart_type": chart_type,
+        "labels": grouped.index.tolist(),
+        "values": [round(float(v), 2) for v in grouped.values],
+        "x_column": x_column,
+        "y_column": y_column,
+    }
